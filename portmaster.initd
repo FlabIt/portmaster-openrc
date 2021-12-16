@@ -1,0 +1,7 @@
+#!/sbin/openrc-run
+
+name=$RC_SVCNAME
+description="Portmaster Privacy App"
+supervisor="supervise-daemon"
+command="/opt/safing/portmaster/portmaster-start"
+command_args="core --data=/opt/safing/portmaster/" 

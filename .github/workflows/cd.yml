@@ -1,0 +1,50 @@
+name: CD Pipeline
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*.*.*.r*.*"
+
+jobs:
+  build_package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Package Version
+        id: get_tag
+        uses: dawidd6/action-get-tag@v1
+        with:
+          # Optionally strip `v` prefix
+          strip_v: false
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Makepkg Build and Check
+        id: make_and_validate_package
+        uses: datakrama/archlinux-package-action@v1
+        with:
+          pkgver: ${{steps.get_tag.outputs.tag}}
+          updpkgsums: true
+          srcinfo: true
+          namcap: true
+
+      - name: Upload artifacts
+        id: upload_artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{steps.get_tag.outputs.tag}}.artifacts
+          path: |
+            PKGBUILD
+            .SRCINFO
+
+      - name: Publish AUR package
+        id: publish_to_aur
+        uses: KSXGitHub/github-actions-deploy-aur@v2.2.5
+        with:
+          pkgname: portmaster-openrc
+          pkgbuild: ./PKGBUILD
+          commit_username: ${{ secrets.AUR_USERNAME }}
+          commit_email: ${{ secrets.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          commit_message: Update AUR package
+          ssh_keyscan_types: rsa,dsa,ecdsa,ed25519

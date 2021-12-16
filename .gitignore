@@ -1,0 +1,9 @@
+# gitignore
+.git
+
+# Build artifacts
+/src
+/pkg
+*.tar.gz
+*.tar.zst
+.next-version
